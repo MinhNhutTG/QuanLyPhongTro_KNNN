@@ -17,6 +17,8 @@ import java.util.List;
 public class add_edit_contract extends JFrame {
 
     private static final long serialVersionUID = 1L;
+    private ContractMode mode;
+    private JButton btnSave; // đưa btnSave thành biến global
 
     // Services
     private final HopDongThueSevice hopDongService;
@@ -41,38 +43,42 @@ public class add_edit_contract extends JFrame {
     // Data list
     private List<ChiTietHopDongDto> selectedTenants = new ArrayList<>();
 
-    public add_edit_contract(String contractId, Runnable callback) {
+    public add_edit_contract(String contractId, ContractMode mode, Runnable callback) {
+        this.mode = mode;
+        this.callback = callback;
+
         this.hopDongService = SpringContext.getBean(HopDongThueSevice.class);
         this.khachThueService = SpringContext.getBean(KhachThueService.class);
         this.phongService = SpringContext.getBean(PhongService.class);
-        this.callback = callback;
-        this.isEditMode = (contractId != null);
 
-        setTitle(isEditMode ? "Cập Nhật Hợp Đồng" : "Thêm Hợp Đồng Mới");
+        this.isEditMode = (mode == ContractMode.EDIT);
+
+        setTitle(
+                mode == ContractMode.ADD ? "Thêm Hợp Đồng Mới" :
+                        mode == ContractMode.EDIT ? "Cập Nhật Hợp Đồng" :
+                                "Xem Chi Tiết Hợp Đồng"
+        );
+
         setSize(1000, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Chỉ đóng form này
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
         initLeftPanel();
         initRightPanel();
 
-        // Load data ban đầu
         loadAllKhachThue();
         loadAllPhong();
 
-        if (isEditMode) {
+        if (mode != ContractMode.ADD) {
             loadContractData(contractId);
-        } else {
-            // Tự động sinh mã HĐ đơn giản (Timestamp)
-            long timestamp = System.currentTimeMillis() / 1000;
-            String shortId = "HD" + (timestamp % 100000000);
-            txtMaHD.setText(shortId);
-            if(cbSoPhong.getItemCount() > 0) {
-                cbSoPhong.setSelectedIndex(0);
-            }
+        }
+
+        if (mode == ContractMode.VIEW) {
+            applyViewMode();
         }
     }
+
 
     // --- PANEL TRÁI: QUẢN LÝ KHÁCH THUÊ ---
     private void initLeftPanel() {
@@ -201,11 +207,16 @@ public class add_edit_contract extends JFrame {
         addFormItem(rightPanel, gbc, 6, "Loại Phòng:", lblLoaiPhong);
         addFormItem(rightPanel, gbc, 7, "Giá Thuê (VND):", txtGiaThue);
 
-        JButton btnSave = new JButton("Lưu Hợp Đồng");
+        btnSave = new JButton("Lưu Hợp Đồng");
         btnSave.setBackground(new Color(21, 115, 71));
         btnSave.setForeground(Color.WHITE);
         btnSave.setPreferredSize(new Dimension(150, 40));
         btnSave.addActionListener(e -> saveContract());
+
+        if (mode == ContractMode.VIEW) {
+            btnSave.setVisible(false);
+        }
+
 
         gbc.gridx = 1; gbc.gridy = 8;
         gbc.anchor = GridBagConstraints.CENTER;
@@ -220,6 +231,18 @@ public class add_edit_contract extends JFrame {
         for(KhachThueDto k : list) {
             modelTop.addRow(new Object[]{k.getMaKhach(), k.getHoTen(), k.getCccd(),k.getTrangThai()});
         }
+    }
+    private void applyViewMode() {
+        txtMaHD.setEditable(false);
+        cbTrangThai.setEnabled(false);
+        txtNgayTao.setEditable(false);
+        txtNgayThue.setEditable(false);
+        txtHanThue.setEditable(false);
+        cbSoPhong.setEnabled(false);
+
+        // Bảng khách thuê
+        tableTop.setEnabled(false);
+        tableBottom.setEnabled(false);
     }
 
     private void loadAllPhong() {

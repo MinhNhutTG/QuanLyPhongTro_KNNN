@@ -16,10 +16,11 @@ import java.util.List;
 @Component
 public class panel_contract extends JPanel {
 
+
     private static final long serialVersionUID = 1L;
     private JTable table;
     private DefaultTableModel model;
-    private JButton btnAdd, btnUpdate, btnDelete, btnRefresh;
+    private JButton btnAdd, btnUpdate, btnDelete, btnRefresh,btnView;
     private JComboBox<String> cbxStatusFilter;
     private final HopDongThueSevice hopDongService;
     // Hệ thống màu sắc đồng bộ (Modern UI)
@@ -86,10 +87,12 @@ public class panel_contract extends JPanel {
         btnAdd = createStyledButton(" Thêm mới ", SUCCESS_COLOR, Color.WHITE);
         btnUpdate = createStyledButton(" Sửa hợp đồng ", PRIMARY_COLOR, new Color(50, 50, 50));
         btnDelete = createStyledButton(" Xóa hợp đồng ", DANGER_COLOR, Color.WHITE);
+        btnView = createStyledButton(" Xem chi tiết ", new Color(52, 73, 94), Color.WHITE);
         btnRefresh = createStyledButton(" Làm mới ", new Color(108, 117, 125), Color.WHITE);
         toolbar.add(btnAdd);
         toolbar.add(btnUpdate);
         toolbar.add(btnDelete);
+        toolbar.add(btnView);
         toolbar.add(btnRefresh);
         return toolbar;
     }
@@ -133,7 +136,8 @@ public class panel_contract extends JPanel {
     private void setupEvent() {
         // Thêm mới
         btnAdd.addActionListener(e -> {
-            new add_edit_contract(null, this::loadData).setVisible(true);
+            new add_edit_contract(null, ContractMode.ADD, this::loadData).setVisible(true);
+
         });
 
         // Cập nhật
@@ -144,7 +148,8 @@ public class panel_contract extends JPanel {
                 return;
             }
             String id = (String) model.getValueAt(row, 0);
-            new add_edit_contract(id, this::loadData).setVisible(true);
+            new add_edit_contract(id, ContractMode.EDIT, this::loadData).setVisible(true);
+
         });
 
         // Xóa
@@ -161,6 +166,19 @@ public class panel_contract extends JPanel {
                 loadData();
                 JOptionPane.showMessageDialog(this, "Đã xóa!");
             }
+        });
+
+        btnView.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Chọn hợp đồng để xem!");
+                return;
+            }
+
+            String id = (String) model.getValueAt(row, 0);
+
+            new add_edit_contract(id, ContractMode.VIEW, null)
+                    .setVisible(true);
         });
 
         // Refresh
