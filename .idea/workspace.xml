@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="175064fa-8fde-4434-bfd7-2809495e6b3d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/quanlyphongtro/ui/Contract/add_edit_contract.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/quanlyphongtro/ui/Contract/add_edit_contract.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/quanlyphongtro/ui/Contract/panel_contract.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/quanlyphongtro/ui/Contract/panel_contract.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/quanlyphongtro/ui/Login.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/quanlyphongtro/ui/Login.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +134,7 @@
       <workItem from="1769644767084" duration="2253000" />
       <workItem from="1769647554253" duration="1004000" />
       <workItem from="1769648608368" duration="1424000" />
-      <workItem from="1769651470681" duration="864000" />
+      <workItem from="1769651470681" duration="1834000" />
     </task>
     <servers />
   </component>

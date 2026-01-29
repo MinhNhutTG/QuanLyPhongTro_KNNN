@@ -91,11 +91,27 @@ public class Login extends JFrame {
         btnLogin.addActionListener(this::handleLogin);
         contentPane.add(btnLogin);
 
+        // Thêm vào sau phần nút Login
+        JButton btnForgotPassword = new JButton("Quên mật khẩu?");
+        btnForgotPassword.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        btnForgotPassword.setContentAreaFilled(false);
+        btnForgotPassword.setBorderPainted(false);
+        btnForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnForgotPassword.setForeground(new Color(41, 128, 185));
+        btnForgotPassword.setBounds(90, 365, 250, 20); // Đặt vị trí dưới nút Đăng nhập
+
+        btnForgotPassword.addActionListener(e -> {
+            this.dispose(); // Đóng trang Login
+            RentalLoginUI forgotPage = context.getBean(RentalLoginUI.class);
+            forgotPage.setVisible(true);
+        });
+        contentPane.add(btnForgotPassword);
+
         JButton btnExit = new JButton("Thoát");
         btnExit.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnExit.setBackground(new Color(231, 76, 60));
         btnExit.setForeground(Color.WHITE);
-        btnExit.setBounds(150, 380, 100, 30);
+        btnExit.setBounds(150, 400, 100, 30);
         btnExit.addActionListener(e -> System.exit(0));
         contentPane.add(btnExit);
         
