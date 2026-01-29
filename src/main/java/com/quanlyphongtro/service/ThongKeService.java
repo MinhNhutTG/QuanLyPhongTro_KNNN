@@ -42,13 +42,13 @@ public class ThongKeService {
 
 
     // 1. Tổng quan (Không đổi vì query này đơn giản)
-    public List<ThongKeDto> getDoanhThuPhong() {
-        return thongKeRepo.getDoanhThuTungPhong();
+    public List<ThongKeDto> getDoanhThuPhong(int year) {
+        return thongKeRepo.getDoanhThuTungPhong(year);
     }
 
     // 2. Doanh thu Tháng
-    public List<ThongKeDto> getDoanhThuThang() {
-        List<Object[]> rawData = thongKeRepo.getDoanhThuTheoThangRaw(LocalDate.now().getYear());
+    public List<ThongKeDto> getDoanhThuThang(int year) {
+        List<Object[]> rawData = thongKeRepo.getDoanhThuTheoThangRaw(year);
         List<ThongKeDto> result = new ArrayList<>();
 
         for (Object[] row : rawData) {
@@ -60,8 +60,8 @@ public class ThongKeService {
     }
 
     // 3. Doanh thu Quý
-    public List<ThongKeDto> getDoanhThuQui() {
-        List<Object[]> rawData = thongKeRepo.getDoanhThuTheoQuiRaw(LocalDate.now().getYear());
+    public List<ThongKeDto> getDoanhThuQui(int year) {
+        List<Object[]> rawData = thongKeRepo.getDoanhThuTheoQuiRaw(year);
         List<ThongKeDto> result = new ArrayList<>();
 
         for (Object[] row : rawData) {
@@ -74,8 +74,8 @@ public class ThongKeService {
     }
 
     // 4. Điện Nước
-    public List<ThongKeDto> getTieuThuDienNuoc() {
-        List<Object[]> rawData = thongKeRepo.getTieuThuDienNuocRaw(LocalDate.now().getYear());
+    public List<ThongKeDto> getTieuThuDienNuoc(int year) {
+        List<Object[]> rawData = thongKeRepo.getTieuThuDienNuocRaw(year);
         List<ThongKeDto> result = new ArrayList<>();
 
         for (Object[] row : rawData) {

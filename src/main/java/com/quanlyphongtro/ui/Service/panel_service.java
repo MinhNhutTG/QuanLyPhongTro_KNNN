@@ -3,6 +3,7 @@ package com.quanlyphongtro.ui.Service;
 import com.quanlyphongtro.models.DichVu;
 import com.quanlyphongtro.models.DichVuPhong;
 import com.quanlyphongtro.models.HopDongThue;
+import com.quanlyphongtro.models.Phong;
 import com.quanlyphongtro.service.DichVuPhongService;
 import com.quanlyphongtro.service.DichVuService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,12 +81,12 @@ public class panel_service extends JPanel {
             @Override
             public void componentShown(java.awt.event.ComponentEvent e) {
                 loadActiveRooms();
-                loadTableData();
+                // loadTableData();
             }
         });
         
         loadActiveRooms();
-        loadTableData();
+        // loadTableData();
     }
 
     private JPanel createHeader() {
@@ -370,22 +371,10 @@ public class panel_service extends JPanel {
             }
 
             if (currentEditId != null) {
-                // Editing existing service
                 DichVuPhong dv = dichVuPhongService.getById(currentEditId);
-                // Update logic... reusing same entity
-                // NOTE: Current refactor was to cleanup CREATE logic.
-                // For Update, we might still want to manually update dv fields or add updateDichVu method to Service.
-                // Given the complexity of splitting Update logic, I will update DV fields here directly if getter/setter available.
-                // Or better, creating update method in Service.
-                // But typically update just saves the dirty entity.
-                
-                // Keep minimal changes for Update path or refactor?
-                // Refactoring update path to use setters here is cleaner than repo access (Service.save works).
                 
                 dv.setKi(ki);
-                // Assuming Room/Contract doesn't change on Edit
-
-                 // Validate inputs
+            
                  try {
                 String dienCuStr = txtDienCu.getText().trim();
                 String nuocCuStr = txtNuocCu.getText().trim();
@@ -461,9 +450,10 @@ public class panel_service extends JPanel {
             }
              
              JOptionPane.showMessageDialog(this, "Lưu thành công!");
-             loadTableData();
-             clearForm(); 
              
+             clearForm(); 
+
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
             ex.printStackTrace();
@@ -476,17 +466,22 @@ public class panel_service extends JPanel {
              return;
         }
         if (JOptionPane.showConfirmDialog(this, "Chắc chắn xóa?") == JOptionPane.YES_OPTION) {
-            dichVuPhongService.delete(currentEditId);
-            loadTableData();
-            clearForm();
+            try {
+                dichVuPhongService.delete(currentEditId);
+                JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                clearForm();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "không thể xóa dịch vụ khi đã lập hóa đơn!");
+                ex.printStackTrace();
+            }
         }
     }
     
-    private void loadTableData() {
-        // Legacy behavior: Show ALL records sorted by Ki DESC
-        List<com.quanlyphongtro.dto.DichVuPhongDto> list = dichVuPhongService.getAllSortedByKiDesc();
-        updateTable(list);
-    }
+    // private void loadTableData() {
+    //     // Legacy behavior: Show ALL records sorted by Ki DESC
+    //     List<com.quanlyphongtro.dto.DichVuPhongDto> list = dichVuPhongService.getAllSortedByKiDesc();
+    //     updateTable(list);
+    // }
 
     private void loadTableDataForRoom(String room) {
         // Legacy behavior: Filter by room, sorted by Ki DESC
@@ -497,7 +492,7 @@ public class panel_service extends JPanel {
     private void filterTable() {
         String status = (String) cbFilterStatus.getSelectedItem();
         if ("Đang hiệu lực".equals(status) || "Tất cả trạng thái".equals(status)) {
-            loadTableData(); // Show all sorted by Ki DESC
+            // loadTableData(); // Show all sorted by Ki DESC
         } else {
             // Use service method for filtering by status
             List<com.quanlyphongtro.dto.DichVuPhongDto> list = dichVuPhongService.filterByStatus(status);
@@ -557,41 +552,28 @@ public class panel_service extends JPanel {
     private void clearForm() {
         currentEditId = null;
         lblMaHD.setText("---");
-        if (!activeRoomNumbers.isEmpty()) {
-            currentRoomIndex = 0;
-            txtSoPhong.setText(activeRoomNumbers.get(currentRoomIndex));
+
+        // Determine current room from text field or navigation index
+        String currentRoom = txtSoPhong.getText();
+        if (currentRoom == null || currentRoom.isEmpty() || !activeRoomNumbers.contains(currentRoom)) {
+             if (!activeRoomNumbers.isEmpty()) {
+                 currentRoom = activeRoomNumbers.get(currentRoomIndex);
+             }
+        } else {
+            // Update index to match current text (if user clicked table row)
+            int idx = activeRoomNumbers.indexOf(currentRoom);
+            if (idx >= 0) currentRoomIndex = idx;
         }
-        cbStatus.setSelectedIndex(0); // Default 'Cho lap hoa don'
+
+        if (currentRoom != null && !currentRoom.isEmpty()) {
+            txtSoPhong.setText(currentRoom);
+            loadNewEntryForRoom(currentRoom);
+            loadTableDataForRoom(currentRoom);
+        } else {
+             model.setRowCount(0);
+        }
         
-        // When clearing (Reload), legacy shows ALL.
-        loadTableData();
-        
-        // Trigger load new entry for first room BUT keep table showing All? 
-        // Legacy: btnReload sets RoomID=0 -> ShowAll.
-        // My cbSoPhong will be Index 0. Listener will trigger loadTableDataForRoom(0).
-        // I need to prevent listener from overriding ShowAll if I want exact match?
-        // Or simply: Clear resets to Index 0, and showing Index 0's history IS the parity with "Change Room".
-        // BUT Legacy btnReload sets RoomID = "0" (Invalid/All).
-        // It's acceptable to show All.
-        // However, if I setSelectedIndex(0), the listener fires and loads room 0.
-        // I will let it load Room 0 for consistency with "User selected a room".
-        // To show ALL, user might need a "Show All" button or "Clear Filter".
-        // `btnClear` acts as "Reset Form" AND "Reload" in Legacy.
-        // "btnReload_Click" in Legacy:
-        //      txtRoomID.Text = "0"; ... showListHistoryService(historyService.GetListHistoryService()); (ALL)
-        // So "Refresh" = Show All.
-        // My btnClear calls clearForm.
-        // If I want "Show All", I must NOT select a specific room in ComboBox effectively.
-        // But ComboBox must have a selection.
-        // Compromise: clearForm loads ALL, but if user touches Combo, it filters.
-        // To achieve this, I need to suppress listener or allow Combo to have "All"?
-        // Adding "Tất cả" to ComboBox is best UI Parity for "Room 0".
-        // But activeRoomNumbers logic assumes valid rooms.
-        // For now, I will let `clearForm` load Table Data ALL, but `cbSoPhong.setIndex` will trigger listener?
-        // Yes.
-        // I will rely on `loadActiveRooms` to setup combo.
-        // I'll leave `loadTableData()` here. The listener might overwrite it immediately if I change index.
-        // I'll simply accept that picking a room filters it.
+        cbStatus.setSelectedIndex(0); 
     }
 
     // --- HELPERS ---

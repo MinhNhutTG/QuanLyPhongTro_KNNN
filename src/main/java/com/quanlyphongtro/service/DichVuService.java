@@ -1,6 +1,5 @@
 package com.quanlyphongtro.service;
 
-import org.springframework.stereotype.Service;
 
 import com.quanlyphongtro.models.DichVu;
 import java.util.List;

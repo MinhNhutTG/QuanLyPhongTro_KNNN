@@ -2,6 +2,7 @@ package com.quanlyphongtro.ui.Invoice;
 
 import com.quanlyphongtro.models.HoaDon;
 import com.quanlyphongtro.service.HoaDonService;
+import com.quanlyphongtro.service.ConfigService;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
@@ -12,6 +13,7 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.BaseFont;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,7 +50,7 @@ public class panel_invoice extends JPanel {
     private final com.quanlyphongtro.service.PhongService phongService;
     private final com.quanlyphongtro.service.EmailService emailService;
     private final com.quanlyphongtro.service.ChiTietHopDongService chiTietHopDongService;
-    private final com.quanlyphongtro.repository.ConfigRepository configRepository;
+    private final ConfigService configService;
 
     private JTextField txtSearch;
     private JTable table;
@@ -67,14 +69,14 @@ public class panel_invoice extends JPanel {
     public panel_invoice(HoaDonService hoaDonService, com.quanlyphongtro.service.HopDongThueSevice hopDongService,
                          com.quanlyphongtro.service.DichVuPhongService dichVuPhongService, com.quanlyphongtro.service.PhongService phongService,
                          com.quanlyphongtro.service.EmailService emailService, com.quanlyphongtro.service.ChiTietHopDongService chiTietHopDongService,
-                         com.quanlyphongtro.repository.ConfigRepository configRepository) {
+                         ConfigService configService) {
         this.hoaDonService = hoaDonService;
         this.hopDongService = hopDongService;
         this.dichVuPhongService = dichVuPhongService;
         this.phongService = phongService;
         this.emailService = emailService;
         this.chiTietHopDongService = chiTietHopDongService;
-        this.configRepository = configRepository;
+        this.configService = configService;
 
         setBackground(BACKGROUND_COLOR);
         setLayout(new BorderLayout(20, 20));
@@ -316,7 +318,7 @@ public class panel_invoice extends JPanel {
         }
         com.quanlyphongtro.dto.HoaDonDto hd = hoaDonService.getHoaDonById(id);
         if (hd != null) {
-            InvoiceDetail dialog = new InvoiceDetail((Frame) SwingUtilities.getWindowAncestor(this), hd, emailService, chiTietHopDongService, configRepository);
+            InvoiceDetail dialog = new InvoiceDetail((Frame) SwingUtilities.getWindowAncestor(this), hd, emailService, chiTietHopDongService, configService);
             dialog.setVisible(true);
         }
     }
@@ -370,50 +372,80 @@ public class panel_invoice extends JPanel {
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream(path));
         document.open();
+
+        com.quanlyphongtro.models.Config config = configService.getConfig();
+        String tenNhaTro = (config != null && config.getTenNhaTro() != null) ? config.getTenNhaTro() : "NHÀ TRỌ";
+        String stk = (config != null && config.getSoTaiKhoan() != null) ? config.getSoTaiKhoan() : "";
+        String bank = (config != null && config.getTenNganHang() != null) ? config.getTenNganHang() : "";
+        String owner = (config != null && config.getTenTaiKhoan() != null) ? config.getTenTaiKhoan() : "";
         
-        com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
-        com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12, BaseColor.BLACK);
+        // Fonts - Use Arial from Windows Fonts for Vietnamese support
+        BaseFont bf = BaseFont.createFont("C:\\Windows\\Fonts\\arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         
-        Paragraph title = new Paragraph("HOA DON TIEN PHONG", titleFont);
+        com.itextpdf.text.Font headerFont = new com.itextpdf.text.Font(bf, 20, com.itextpdf.text.Font.BOLD, new BaseColor(46, 139, 87));
+        com.itextpdf.text.Font sectionFont = new com.itextpdf.text.Font(bf, 14, com.itextpdf.text.Font.BOLD, new BaseColor(46, 139, 87));
+        com.itextpdf.text.Font normalFont = new com.itextpdf.text.Font(bf, 12, com.itextpdf.text.Font.NORMAL, BaseColor.BLACK);
+        com.itextpdf.text.Font boldFont = new com.itextpdf.text.Font(bf, 12, com.itextpdf.text.Font.BOLD, BaseColor.BLACK);
+        com.itextpdf.text.Font totalFont = new com.itextpdf.text.Font(bf, 16, com.itextpdf.text.Font.BOLD, BaseColor.RED);
+
+        // 1. Header
+        Paragraph title = new Paragraph("HÓA ĐƠN TIỀN TRỌ", headerFont);
         title.setAlignment(Element.ALIGN_CENTER);
         title.setSpacingAfter(20);
         document.add(title);
-        
-        document.add(new Paragraph("Ma Hoa Don: " + hd.getIdHoaDon(), normalFont));
-        document.add(new Paragraph("Ngay Lap: " + (hd.getNgayLapHoaDon() != null ? hd.getNgayLapHoaDon().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : ""), normalFont));
-        
+
+        // 2. Thong tin nha tro
+        document.add(new Paragraph("THÔNG TIN NHÀ TRỌ", sectionFont));
+        document.add(new Paragraph("Tên trọ: " + tenNhaTro, normalFont));
+        document.add(new Paragraph("Số tài khoản: " + stk, normalFont));
+        document.add(new Paragraph("Ngân hàng: " + bank, normalFont));
+        document.add(new Paragraph("Chủ tài khoản: " + owner, normalFont));
+        document.add(new Paragraph(" ", normalFont)); // Spacing
+
+        // 3. Hoa don Details
+        document.add(new Paragraph("HÓA ĐƠN", sectionFont));
+        document.add(new Paragraph("Mã hóa đơn: " + hd.getIdHoaDon(), normalFont));
+        document.add(new Paragraph("Trạng thái: " + (hd.getTrangThai() != null ? hd.getTrangThai() : ""), normalFont));
+        document.add(new Paragraph("Ngày lập: " + (hd.getNgayLapHoaDon() != null ? hd.getNgayLapHoaDon().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : ""), normalFont));
+        document.add(new Paragraph(" ", normalFont));
+
+        // 4. Dich vu
+        document.add(new Paragraph("DỊCH VỤ", sectionFont));
         String room = hd.getDichVuPhong() != null ? hd.getDichVuPhong().getSoPhong() : "";
-        document.add(new Paragraph("Phong: " + room, normalFont));
-        document.add(new Paragraph("------------------------------------------------", normalFont));
+        document.add(new Paragraph("Số phòng: " + room, normalFont));
         
-        PdfPCell vCell;
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
         table.setSpacingBefore(10f);
         table.setSpacingAfter(10f);
-        
-        addPdfRow(table, "Tien Phong", hd.getGiaPhong());
-        addPdfRow(table, "Tien Dien (" + hd.getSoDien() + ")", hd.getTienDien());
-        addPdfRow(table, "Tien Nuoc (" + hd.getSoNuoc() + ")", hd.getTienNuoc());
+
+        addPdfRow(table, "Tiền Phòng", hd.getGiaPhong(), normalFont);
+        addPdfRow(table, "Tiền Điện (" + hd.getSoDien() + " kWh)", hd.getTienDien(), normalFont);
+        addPdfRow(table, "Tiền Nước (" + hd.getSoNuoc() + " m3)", hd.getTienNuoc(), normalFont);
         
         if (hd.getDichVuPhong() != null) {
-             addPdfRow(table, "Tien Mang", hd.getDichVuPhong().getTienMang());
+             addPdfRow(table, "Tiền Mạng", hd.getDichVuPhong().getTienMang(), normalFont);
         }
-        addPdfRow(table, "Phi Khac", hd.getPhiKhac());
-        
+        addPdfRow(table, "Phí Khác", hd.getPhiKhac(), normalFont);
+
         document.add(table);
-        
-        Paragraph total = new Paragraph("TONG TIEN: " + new DecimalFormat("#,###").format(hd.getTongTien()) + " VND", titleFont);
+
+        Paragraph total = new Paragraph("TỔNG TIỀN: " + new DecimalFormat("#,###").format(hd.getTongTien()) + " VND", totalFont);
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
         
+        if (hd.getGhiChu() != null && !hd.getGhiChu().isEmpty()) {
+            document.add(new Paragraph(" ", normalFont));
+            document.add(new Paragraph("Ghi chú: " + hd.getGhiChu(), normalFont));
+        }
+
         document.close();
     }
-    
-    private void addPdfRow(PdfPTable table, String name, BigDecimal value) {
+
+    private void addPdfRow(PdfPTable table, String name, BigDecimal value, com.itextpdf.text.Font font) {
         if (value == null) value = BigDecimal.ZERO;
-        table.addCell(new PdfPCell(new Phrase(name)));
-        PdfPCell vCell = new PdfPCell(new Phrase(new DecimalFormat("#,###").format(value)));
+        table.addCell(new PdfPCell(new Phrase(name, font)));
+        PdfPCell vCell = new PdfPCell(new Phrase(new DecimalFormat("#,###").format(value), font));
         vCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         table.addCell(vCell);
     }

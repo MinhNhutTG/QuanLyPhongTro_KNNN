@@ -7,6 +7,7 @@ import com.quanlyphongtro.service.KhachThueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,7 +65,13 @@ public class KhachThueServiceImpl implements KhachThueService {
         if (!khachThueRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy khách thuê để xóa!");
         }
-        khachThueRepository.deleteById(id);
+        try {
+            khachThueRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("Không thể xóa khách đang có hợp đồng hoặc hóa đơn liên quan!");
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa khách thuê: " + e.getMessage());
+        }
     }
 
     @Override
@@ -119,17 +126,12 @@ public class KhachThueServiceImpl implements KhachThueService {
         if (dto.getCccd().length() < 5 || dto.getCccd().length() > 13) {
             throw new RuntimeException("CCCD không hợp lệ");
         }
-        // Note: C# did NOT enforce numeric-only for CCCD in the snippet? 
-        // "if (g.CCCD.Length < 5 || g.CCCD.Length > 13)"
-        // Java was: matches("\\d{9,12}"). I will relax it to length check to be safe, 
-        // but typically CCCD is numeric. I'll stick to length to allow flexibility if C# allowed it.
-
-        // Phone Check (C# Logic: Length != 10)
+    
         if (dto.getSoDienThoai() != null && !dto.getSoDienThoai().isEmpty()) {
             if (dto.getSoDienThoai().length() != 10) {
                 throw new RuntimeException("Số điện thoại không hợp lệ");
             }
-            // Optional: Check numeric
+        
             if (!dto.getSoDienThoai().matches("\\d+")) {
                  throw new RuntimeException("Số điện thoại không hợp lệ");
             }

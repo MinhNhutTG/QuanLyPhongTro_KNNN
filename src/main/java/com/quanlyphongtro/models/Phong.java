@@ -2,23 +2,26 @@
 	
 	import jakarta.persistence.*;
 	
+	/**
+	 * Entity đại diện cho Phòng trọ
+	 */
 	@Entity
 	@Table(name = "phong")
 	public class Phong {
 	
 	    @Id
 	    @Column(name = "SoPhong", length = 10)
-	    private String soPhong;
+	    private String soPhong; // Mã số phòng (Primary Key)
 	
 	    @Column(name = "TrangThai", length = 50, nullable = false)
-	    private String trangThai;
+	    private String trangThai; // Trạng thái: Trống, Đang thuê, Đang sửa...
 	
 	    @ManyToOne
 	    @JoinColumn(name = "MaLoai", nullable = false)
-	    private LoaiPhong loaiPhong;
+	    private LoaiPhong loaiPhong; // Loại phòng (VIP, Thường...)
 	
 	    @Column(name = "GhiChu", length = 1000)
-	    private String ghiChu;
+	    private String ghiChu; // Ghi chú thêm (nếu có)
 	
 		public String getSoPhong() {
 			return soPhong;

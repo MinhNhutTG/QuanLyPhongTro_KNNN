@@ -21,4 +21,6 @@ public interface DichVuPhongRepository extends JpaRepository<DichVuPhong, Intege
     java.util.List<DichVuPhong> findAllByOrderByKiDesc();
     java.util.List<DichVuPhong> findByPhong_SoPhongOrderByKiDesc(String soPhong);
     java.util.List<DichVuPhong> findByTrangThaiOrderByKiDesc(String trangThai);
+    @org.springframework.data.jpa.repository.Query("SELECT MAX(d.id) FROM DichVuPhong d")
+    Integer findMaxId();
 }

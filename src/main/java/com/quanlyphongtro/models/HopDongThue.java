@@ -3,26 +3,29 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Entity đại diện cho Hợp Đồng Thuê
+ */
 @Entity
 @Table(name = "hopdongthue")
 public class HopDongThue {
 
     @Id
     @Column(name = "ID", length = 10)
-    private String id;
+    private String id; // Mã hợp đồng
 
     @Column(name = "NgayThue")
-    private LocalDateTime ngayThue;
+    private LocalDateTime ngayThue; // Ngày bắt đầu thuê
 
     @Column(name = "HanThue")
-    private LocalDateTime hanThue;
+    private LocalDateTime hanThue; // Ngày hết hạn hợp đồng
 
     @ManyToOne
     @JoinColumn(name = "SoPhong", nullable = false)
-    private Phong phong;
+    private Phong phong; // Phòng được thuê
 
     @Column(name = "GiaPhong")
-    private BigDecimal giaPhong;
+    private BigDecimal giaPhong; // Giá thuê tại thời điểm ký
 
     @Column(name = "TrangThai", length = 50, nullable = false)
     private String trangThai;

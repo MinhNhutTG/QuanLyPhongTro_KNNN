@@ -4,6 +4,7 @@ import com.quanlyphongtro.dto.HoaDonDto;
 import com.quanlyphongtro.dto.DichVuPhongDto;
 import com.quanlyphongtro.service.ChiTietHopDongService;
 import com.quanlyphongtro.service.EmailService;
+import com.quanlyphongtro.service.ConfigService;
 import com.quanlyphongtro.models.KhachThue;
 
 import com.itextpdf.text.Document;
@@ -30,14 +31,14 @@ public class InvoiceDetail extends JDialog {
     private HoaDonDto hoaDon;
     private final EmailService emailService;
     private final ChiTietHopDongService chiTietHopDongService;
-    private final com.quanlyphongtro.repository.ConfigRepository configRepository;
+    private final ConfigService configService;
 
-    public InvoiceDetail(Frame parent, HoaDonDto hoaDon, EmailService emailService, ChiTietHopDongService chiTietHopDongService, com.quanlyphongtro.repository.ConfigRepository configRepository) {
+    public InvoiceDetail(Frame parent, HoaDonDto hoaDon, EmailService emailService, ChiTietHopDongService chiTietHopDongService, ConfigService configService) {
         super(parent, "Chi tiết hóa đơn", true);
         this.hoaDon = hoaDon;
         this.emailService = emailService;
         this.chiTietHopDongService = chiTietHopDongService;
-        this.configRepository = configRepository;
+        this.configService = configService;
 
         setSize(800, 600);
         setLocationRelativeTo(parent);
@@ -143,7 +144,7 @@ public class InvoiceDetail extends JDialog {
                 }
 
                 // Get Config
-                com.quanlyphongtro.models.Config config = configRepository.findAll().stream().findFirst().orElse(null);
+                com.quanlyphongtro.models.Config config = configService.getConfig();
                 if (config == null) {
                     JOptionPane.showMessageDialog(this, "Chưa cấu hình thông tin nhà trọ (Config)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     return;

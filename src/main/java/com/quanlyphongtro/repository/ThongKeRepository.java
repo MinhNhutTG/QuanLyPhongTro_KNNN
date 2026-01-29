@@ -18,15 +18,15 @@ public interface ThongKeRepository extends JpaRepository<HoaDon, String> {
         FROM HoaDon h
         LEFT JOIN h.dichVuPhong dvp
         LEFT JOIN dvp.phong p
-        WHERE h.trangThai = 'da_thanh_toan'
+        WHERE h.trangThai = 'Đã Thanh Toán' AND FUNCTION('YEAR', h.ngayLapHoaDon) = :year
         GROUP BY p.soPhong
         """)
-    List<ThongKeDto> getDoanhThuTungPhong();
+    List<ThongKeDto> getDoanhThuTungPhong(@Param("year") int year);
 
 
     // 2. Doanh thu: Theo tháng (Giữ nguyên - Đã chạy đúng)
     @Query("SELECT FUNCTION('MONTH', h.ngayLapHoaDon), SUM(h.tongTien) " +
-            "FROM HoaDon h WHERE h.trangThai = 'da_thanh_toan' AND FUNCTION('YEAR', h.ngayLapHoaDon) = :year " +
+            "FROM HoaDon h WHERE h.trangThai = 'Đã Thanh Toán' AND FUNCTION('YEAR', h.ngayLapHoaDon) = :year " +
             "GROUP BY FUNCTION('MONTH', h.ngayLapHoaDon) " +
             "ORDER BY FUNCTION('MONTH', h.ngayLapHoaDon)")
     List<Object[]> getDoanhThuTheoThangRaw(@Param("year") int year);
@@ -34,7 +34,7 @@ public interface ThongKeRepository extends JpaRepository<HoaDon, String> {
     // 3. Doanh thu: Theo Quý (SỬA LẠI ĐOẠN NÀY)
     // Thay logic CEILING(...) phức tạp bằng hàm QUARTER(...) của MySQL
     @Query("SELECT FUNCTION('QUARTER', h.ngayLapHoaDon), SUM(h.tongTien) " +
-            "FROM HoaDon h WHERE h.trangThai = 'da_thanh_toan' AND FUNCTION('YEAR', h.ngayLapHoaDon) = :year " +
+            "FROM HoaDon h WHERE h.trangThai = 'Đã Thanh Toán' AND FUNCTION('YEAR', h.ngayLapHoaDon) = :year " +
             "GROUP BY FUNCTION('QUARTER', h.ngayLapHoaDon) " +
             "ORDER BY FUNCTION('QUARTER', h.ngayLapHoaDon)")
     List<Object[]> getDoanhThuTheoQuiRaw(@Param("year") int year);

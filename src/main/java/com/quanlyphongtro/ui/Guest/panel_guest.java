@@ -310,7 +310,29 @@ public class panel_guest extends JPanel {
                     loadData();
                     clearForm();
                 }
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
+            } catch (Exception ex) {
+                // Check if likely Foreign Key violation (common in delete)
+                if (ex.getMessage() != null && (ex.getMessage().contains("Constraint") || ex.getMessage().contains("foreign key") || ex.toString().contains("DataIntegrityViolation"))) {
+                     JOptionPane.showMessageDialog(this, "Không thể xóa khách thuê! (Đang có hợp đồng hoặc hóa đơn liên quan)");
+                } else {
+                     // Check deep cause for Spring Transaction wrapping
+                     Throwable cause = ex.getCause();
+                     boolean isFK = false;
+                     while (cause != null) {
+                         if (cause.getMessage() != null && (cause.getMessage().contains("Constraint") || cause.getMessage().contains("foreign key"))) {
+                             isFK = true;
+                             break;
+                         }
+                         cause = cause.getCause();
+                     }
+                     
+                     if (isFK) {
+                          JOptionPane.showMessageDialog(this, "Không thể xóa khách thuê! (Đang có hợp đồng hoặc hóa đơn liên quan)");
+                     } else {
+                          JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                     }
+                }
+            }
         });
 
         btnRefresh.addActionListener(e -> { clearForm(); loadData(); });

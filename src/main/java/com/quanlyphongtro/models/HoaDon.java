@@ -4,17 +4,20 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Entity đại diện cho Hóa Đơn Thanh Toán
+ */
 @Entity
 @Table(name = "hoadon")
 public class HoaDon {
 
     @Id
     @Column(name = "IDHoaDon", length = 10)
-    private String idHoaDon;
+    private String idHoaDon; // Mã hóa đơn
 
     @ManyToOne
     @JoinColumn(name = "IDDichVu")
-    private DichVuPhong dichVuPhong;
+    private DichVuPhong dichVuPhong; // Liên kết với dịch vụ sử dụng
 
     @Column(name = "SoDien")
     private Integer soDien;
@@ -32,7 +35,7 @@ public class HoaDon {
     private BigDecimal phiKhac;
 
     @Column(name = "TongTien")
-    private BigDecimal tongTien;
+    private BigDecimal tongTien; // Tổng tiền thanh toán
 
     @Column(name = "GiaPhong")
     private BigDecimal giaPhong;
@@ -41,7 +44,7 @@ public class HoaDon {
     private LocalDateTime ngayLapHoaDon;
 
     @Column(name = "TrangThai", length = 50, nullable = false)
-    private String trangThai;
+    private String trangThai; // Trạng thái: Đã thanh toán, Chưa thanh toán...
 
     @Column(name = "GhiChu", length = 1000)
     private String ghiChu;

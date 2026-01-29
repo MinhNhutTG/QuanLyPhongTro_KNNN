@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 public class Config {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
     private Long id;
 

@@ -4,30 +4,33 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Entity đại diện cho Dịch Vụ Phòng (Điện, Nước, ...)
+ */
 @Entity
 @Table(name = "dichvuphong")
 public class DichVuPhong {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
 	@Column(name = "ID")
-    private Integer id;	
+    private Integer id;	// ID tự tăng (Manual Sequence)
 
     @ManyToOne
     @JoinColumn(name = "SoPhong", nullable = false)
-    private Phong phong;
+    private Phong phong; // Phòng sử dụng dịch vụ
 
     @Column(name = "MaHopDong", length = 10)
     private String maHopDong;
 
     @Column(name = "Ki", length = 10)
-    private String ki;
+    private String ki; // Kỳ ghi điện nước (Tháng/Năm)
 
     @Column(name = "SoDienCu")
-    private Integer soDienCu;
+    private Integer soDienCu; // Chỉ số điện cũ
 
     @Column(name = "SoDienMoi")
-    private Integer soDienMoi;
+    private Integer soDienMoi; // Chỉ số điện mới
 
     @Column(name = "SoNuocCu")
     private Integer soNuocCu;
@@ -48,7 +51,7 @@ public class DichVuPhong {
     private LocalDateTime ngayTao;
 
     @Column(name = "TrangThai", length = 50)
-    private String trangThai;
+    private String trangThai; // Trạng thái: Chờ thanh toán, Đã thanh toán...
 
 	public Integer getId() {
 		return id;

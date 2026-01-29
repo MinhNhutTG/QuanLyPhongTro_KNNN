@@ -11,12 +11,15 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.chart.axis.NumberAxis;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.util.Calendar;
 import java.util.List;
 
 @Component
@@ -24,15 +27,22 @@ public class panel_report extends JPanel {
 
     private static final long serialVersionUID = 1L;
     private final ThongKeService thongKeService;
+    
     // Hệ màu Dashboard hiện đại
     private final Color PRIMARY_COLOR = new Color(41, 128, 185);
     private final Color SUCCESS_COLOR = new Color(39, 174, 96);
     private final Color WARNING_COLOR = new Color(241, 196, 15);
     private final Color DANGER_COLOR = new Color(231, 76, 60);
     private final Color BACKGROUND_COLOR = new Color(240, 242, 245);
+    
     private JPanel panelChartContainer;
     private JLabel lblChartTitle;
-    private JButton btnTabOverview, btnTabRevenue, btnTabService; // Khai báo biến
+    private JButton btnTabOverview, btnTabRevenue, btnTabService;
+    
+    // --- MỚI THÊM: Combobox chọn năm ---
+    private JComboBox<Integer> cboYear;
+    private String currentTab = "OVERVIEW"; // Biến theo dõi tab đang mở
+
     public panel_report() {
         this.thongKeService = SpringContext.getBean(ThongKeService.class);
         setBackground(BACKGROUND_COLOR);
@@ -48,9 +58,10 @@ public class panel_report extends JPanel {
         panelMain.setOpaque(false);
         add(panelMain, BorderLayout.CENTER);
 
-        // --- 3. NAVIGATION TABS (Segmented Control style) ---
+        // --- 3. NAVIGATION TABS & FILTER ---
         JPanel panelNav = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         panelNav.setOpaque(false);
+        
         btnTabOverview = createNavButton("Tổng quan", true);
         btnTabRevenue = createNavButton("Doanh thu", false);
         btnTabService = createNavButton("Dịch vụ", false);
@@ -59,9 +70,32 @@ public class panel_report extends JPanel {
         panelNav.add(btnTabRevenue);
         panelNav.add(btnTabService);
 
-        panelMain.add(panelNav);
-        panelMain.add(Box.createVerticalStrut(25));
+        // --- MỚI THÊM: Khoảng cách và Combobox Năm ---
+        panelNav.add(Box.createHorizontalStrut(30)); // Tạo khoảng cách
         
+        JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        pnlFilter.setOpaque(false);
+        
+        JLabel lblNam = new JLabel("Chọn năm:");
+        lblNam.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblNam.setForeground(new Color(100, 100, 100));
+        
+        // Khởi tạo combobox năm
+        cboYear = new JComboBox<>();
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        for (int i = currentYear; i >= currentYear - 5; i--) {
+            cboYear.addItem(i);
+        }
+        cboYear.setPreferredSize(new Dimension(100, 35));
+        cboYear.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cboYear.setBackground(Color.WHITE);
+        cboYear.setFocusable(false);
+
+        pnlFilter.add(lblNam);
+        pnlFilter.add(cboYear);
+        panelNav.add(pnlFilter);
+        // ---------------------------------------------
+
         panelMain.add(panelNav);
         panelMain.add(Box.createVerticalStrut(25));
 
@@ -73,12 +107,12 @@ public class panel_report extends JPanel {
         String totalPhong = String.valueOf(thongKeService.getTotalPhong());
         String phongDangThue = String.valueOf(thongKeService.getPhongDaThue());
         String hoaDonThang = String.valueOf(thongKeService.getSoHoaDonThang());
-        String doanhThuThang = thongKeService.getDoanhThuThangHienTai(); // Đã format sẵn "25.5M"
+        String doanhThuThang = thongKeService.getDoanhThuThangHienTai();
 
-        panelCards.add(createStatCard("TỔNG SỐ PHÒNG", totalPhong, PRIMARY_COLOR, "🏢"));
-        panelCards.add(createStatCard("PHÒNG ĐANG THUÊ", phongDangThue, SUCCESS_COLOR, "🔑"));
-        panelCards.add(createStatCard("HÓA ĐƠN THÁNG", hoaDonThang, WARNING_COLOR, "📄"));
-        panelCards.add(createStatCard("DOANH THU THÁNG", doanhThuThang, DANGER_COLOR, "💰"));
+        panelCards.add(createStatCard("TỔNG SỐ PHÒNG", totalPhong, PRIMARY_COLOR, ""));
+        panelCards.add(createStatCard("PHÒNG ĐANG THUÊ", phongDangThue, SUCCESS_COLOR, ""));
+        panelCards.add(createStatCard("HÓA ĐƠN THÁNG", hoaDonThang, WARNING_COLOR, ""));
+        panelCards.add(createStatCard("DOANH THU THÁNG", doanhThuThang, DANGER_COLOR, ""));
 
         panelMain.add(panelCards);
         panelMain.add(Box.createVerticalStrut(25));
@@ -91,7 +125,6 @@ public class panel_report extends JPanel {
             new EmptyBorder(20, 20, 20, 20)
         ));
         
-        // Header của biểu đồ
         JPanel pnlChartHeader = new JPanel(new BorderLayout());
         pnlChartHeader.setOpaque(false);
         lblChartTitle = new JLabel("Phân tích doanh thu & Xu hướng");
@@ -100,39 +133,57 @@ public class panel_report extends JPanel {
         
         panelChartArea.add(pnlChartHeader, BorderLayout.NORTH);
         
-        // Placeholder cho biểu đồ
-        panelChartContainer = new JPanel(new GridLayout(1, 1)); // Mặc định 1 biểu đồ
+        panelChartContainer = new JPanel(new GridLayout(1, 1));
         panelChartContainer.setOpaque(false);
         panelChartArea.add(panelChartContainer, BorderLayout.CENTER);
         
         panelMain.add(panelChartArea);
-        // --- EVENTS ---
+        
         setupEvents();
-
-        // Load mặc định
         loadOverviewChart();
     }
+
     private void setupEvents() {
         btnTabOverview.addActionListener(e -> {
+            currentTab = "OVERVIEW";
             setActiveTab(btnTabOverview);
             loadOverviewChart();
         });
         btnTabRevenue.addActionListener(e -> {
+            currentTab = "REVENUE";
             setActiveTab(btnTabRevenue);
             loadRevenueCharts();
         });
         btnTabService.addActionListener(e -> {
+            currentTab = "SERVICE";
             setActiveTab(btnTabService);
             loadServiceCharts();
         });
+
+        // --- MỚI THÊM: Sự kiện khi chọn năm ---
+        cboYear.addActionListener(e -> {
+            int selectedYear = (int) cboYear.getSelectedItem();
+            System.out.println("Đã chọn năm: " + selectedYear);
+            
+            // Reload lại tab hiện tại với năm mới
+            // Lưu ý: Bạn cần sửa các hàm load...Chart() để truyền tham số year vào service
+            switch (currentTab) {
+                case "OVERVIEW": loadOverviewChart(); break;
+                case "REVENUE": loadRevenueCharts(); break;
+                case "SERVICE": loadServiceCharts(); break;
+            }
+        });
     }
+
     private void loadOverviewChart() {
         lblChartTitle.setText("Doanh thu tổng hợp theo từng phòng");
         panelChartContainer.removeAll();
         panelChartContainer.setLayout(new GridLayout(1, 1));
 
+        int year = (int) cboYear.getSelectedItem(); // Get selected year
+
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        List<ThongKeDto> data = thongKeService.getDoanhThuPhong();
+        List<ThongKeDto> data = thongKeService.getDoanhThuPhong(year);
 
         for (ThongKeDto item : data) {
             dataset.addValue(item.getGiaTri(), "Doanh Thu", "P." + item.getNhan());
@@ -143,19 +194,20 @@ public class panel_report extends JPanel {
                 PlotOrientation.VERTICAL, false, true, false);
 
         styleChart(chart);
+        applyRevenueAxis(chart);
         panelChartContainer.add(new ChartPanel(chart));
         refreshChartPanel();
     }
 
-    // 2. DOANH THU: 2 Biểu đồ (Tháng - Line, Quý - Bar)
     private void loadRevenueCharts() {
         lblChartTitle.setText("Biểu đồ doanh thu theo Tháng & Quý");
         panelChartContainer.removeAll();
-        panelChartContainer.setLayout(new GridLayout(1, 2, 20, 0)); // Chia đôi
+        panelChartContainer.setLayout(new GridLayout(1, 2, 20, 0));
 
-        // Chart 1: Theo Tháng (Line Chart)
+        int year = (int) cboYear.getSelectedItem(); // Get selected year
+
         DefaultCategoryDataset dsMonth = new DefaultCategoryDataset();
-        List<ThongKeDto> dataMonth = thongKeService.getDoanhThuThang();
+        List<ThongKeDto> dataMonth = thongKeService.getDoanhThuThang(year);
         for (ThongKeDto item : dataMonth) {
             dsMonth.addValue(item.getGiaTri(), "Doanh Thu", "Tháng " + item.getNhan());
         }
@@ -163,17 +215,16 @@ public class panel_report extends JPanel {
                 "Theo Tháng", "Tháng", "VND", dsMonth,
                 PlotOrientation.VERTICAL, false, true, false);
         styleChart(chartMonth);
+        applyRevenueAxis(chartMonth);
 
-        // Custom renderer cho Line đẹp hơn
         CategoryPlot plot = chartMonth.getCategoryPlot();
         LineAndShapeRenderer renderer = new LineAndShapeRenderer();
         renderer.setSeriesPaint(0, DANGER_COLOR);
         renderer.setSeriesStroke(0, new BasicStroke(2.0f));
         plot.setRenderer(renderer);
 
-        // Chart 2: Theo Quý (Bar Chart)
         DefaultCategoryDataset dsQuarter = new DefaultCategoryDataset();
-        List<ThongKeDto> dataQuarter = thongKeService.getDoanhThuQui();
+        List<ThongKeDto> dataQuarter = thongKeService.getDoanhThuQui(year);
         for (ThongKeDto item : dataQuarter) {
             dsQuarter.addValue(item.getGiaTri(), "Doanh Thu", "Quý " + item.getNhan());
         }
@@ -181,38 +232,36 @@ public class panel_report extends JPanel {
                 "Theo Quý", "Quý", "VND", dsQuarter,
                 PlotOrientation.VERTICAL, false, true, false);
         styleChart(chartQuarter);
+        applyRevenueAxis(chartQuarter);
 
         panelChartContainer.add(new ChartPanel(chartMonth));
         panelChartContainer.add(new ChartPanel(chartQuarter));
         refreshChartPanel();
     }
 
-    // 3. DỊCH VỤ: 2 Biểu đồ (Điện Nước - Multi Bar, Doanh thu DV - Bar)
     private void loadServiceCharts() {
         lblChartTitle.setText("Thống kê tiêu thụ Điện/Nước & Doanh thu dịch vụ");
         panelChartContainer.removeAll();
         panelChartContainer.setLayout(new GridLayout(1, 2, 20, 0));
 
-        // Chart 1: Tiêu thụ Điện/Nước
+        int year = (int) cboYear.getSelectedItem(); // Get selected year
+
         DefaultCategoryDataset dsConsump = new DefaultCategoryDataset();
-        List<ThongKeDto> dataConsump = thongKeService.getTieuThuDienNuoc();
+        List<ThongKeDto> dataConsump = thongKeService.getTieuThuDienNuoc(year);
         for (ThongKeDto item : dataConsump) {
-            String thangLabel = "T" + item.getNhan();
             dsConsump.addValue(item.getGiaTri(), "Điện (KWh)", item.getNhan());
             dsConsump.addValue(item.getGiaTri2(), "Nước (m3)", item.getNhan());
         }
         JFreeChart chartConsump = ChartFactory.createBarChart(
-                "Tiêu thụ Điện & Nước", "Tháng", "Số lượng", dsConsump,
+                "Tiêu thụ Điện & Nước", "Tháng", "VND", dsConsump,
                 PlotOrientation.VERTICAL, true, true, false);
         styleChart(chartConsump);
 
-        // Custom màu cho Bar
         CategoryPlot plot = chartConsump.getCategoryPlot();
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setSeriesPaint(0, WARNING_COLOR); // Điện màu vàng
-        renderer.setSeriesPaint(1, PRIMARY_COLOR); // Nước màu xanh
+        renderer.setSeriesPaint(0, WARNING_COLOR);
+        renderer.setSeriesPaint(1, PRIMARY_COLOR);
 
-        // Chart 2: Doanh thu Dịch vụ (Mockup dữ liệu vì chưa có query cụ thể)
         DefaultCategoryDataset dsServiceRev = new DefaultCategoryDataset();
         dsServiceRev.addValue(1500000, "Dịch vụ", "T1");
         dsServiceRev.addValue(1800000, "Dịch vụ", "T2");
@@ -221,11 +270,13 @@ public class panel_report extends JPanel {
                 "Doanh thu Dịch vụ khác", "Tháng", "VND", dsServiceRev,
                 PlotOrientation.VERTICAL, false, true, false);
         styleChart(chartServiceRev);
+        applyRevenueAxis(chartServiceRev);
 
         panelChartContainer.add(new ChartPanel(chartConsump));
         panelChartContainer.add(new ChartPanel(chartServiceRev));
         refreshChartPanel();
     }
+
     private void refreshChartPanel() {
         panelChartContainer.revalidate();
         panelChartContainer.repaint();
@@ -238,6 +289,21 @@ public class panel_report extends JPanel {
         plot.setDomainGridlinePaint(new Color(240, 240, 240));
         plot.setRangeGridlinePaint(new Color(240, 240, 240));
         plot.setOutlineVisible(false);
+    }
+
+    private void applyRevenueAxis(JFreeChart chart) {
+        CategoryPlot plot = chart.getCategoryPlot();
+        NumberAxis axis = (NumberAxis) plot.getRangeAxis();
+        
+        // Define standard integer format (100,000)
+        NumberFormat currencyFormat = new DecimalFormat("#,##0");
+        axis.setNumberFormatOverride(currencyFormat);
+
+        // Allow dynamic auto-scaling (Removed hardcoded setTickUnit)
+        axis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        
+        // Ensure axis starts at 0
+        axis.setAutoRangeIncludesZero(true);
     }
 
     private void setActiveTab(JButton activeBtn) {
@@ -256,7 +322,6 @@ public class panel_report extends JPanel {
         btn.setBorder(new LineBorder(new Color(218, 220, 224)));
     }
 
-
     private JPanel createHeader() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
@@ -268,20 +333,9 @@ public class panel_report extends JPanel {
         lblTitle.setBorder(new EmptyBorder(0, 25, 0, 0));
         header.add(lblTitle, BorderLayout.WEST);
         
-        // Nút xuất báo cáo
-        JButton btnExport = new JButton(" Xuất Báo Cáo (PDF/Excel)");
-        btnExport.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnExport.setBackground(SUCCESS_COLOR);
-        btnExport.setForeground(Color.WHITE);
-        btnExport.setFocusPainted(false);
-        btnExport.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        JPanel pnlExport = new JPanel(new FlowLayout(FlowLayout.RIGHT, 25, 18));
-        pnlExport.setOpaque(false);
-        pnlExport.add(btnExport);
-        header.add(pnlExport, BorderLayout.EAST);
+      
 
-        return new JPanel();
+        return header; // Đã sửa: Trả về header thay vì new JPanel()
     }
 
     private JButton createNavButton(String text, boolean isActive) {
@@ -310,7 +364,6 @@ public class panel_report extends JPanel {
             new EmptyBorder(20, 20, 20, 20)
         ));
 
-        // Phần text
         JPanel pnlText = new JPanel();
         pnlText.setLayout(new BoxLayout(pnlText, BoxLayout.Y_AXIS));
         pnlText.setOpaque(false);
@@ -327,7 +380,6 @@ public class panel_report extends JPanel {
         pnlText.add(Box.createVerticalStrut(5));
         pnlText.add(lblValue);
 
-        // Phần icon/vạch màu
         JLabel lblIcon = new JLabel(icon);
         lblIcon.setFont(new Font("Segoe UI", Font.PLAIN, 30));
         lblIcon.setForeground(color);
@@ -335,12 +387,11 @@ public class panel_report extends JPanel {
         card.add(pnlText, BorderLayout.CENTER);
         card.add(lblIcon, BorderLayout.EAST);
         
-        // Vạch màu trang trí phía dưới
         card.add(new JPanel() {{
             setBackground(color);
             setPreferredSize(new Dimension(0, 4));
         }}, BorderLayout.SOUTH);
 
-        return new JPanel();
+        return card; // Đã sửa: Trả về card thay vì new JPanel()
     }
 }

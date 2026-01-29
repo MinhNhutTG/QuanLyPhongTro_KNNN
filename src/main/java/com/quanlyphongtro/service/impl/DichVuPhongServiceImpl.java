@@ -6,8 +6,7 @@ import com.quanlyphongtro.service.DichVuPhongService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+
 
 import java.util.List;
 
@@ -20,6 +19,7 @@ public class DichVuPhongServiceImpl implements DichVuPhongService {
 
     @Override
     public List<com.quanlyphongtro.dto.DichVuPhongDto> getAll() {
+        // Chuyển đổi từ Entity sang DTO để trả về UI
         return repository.findAll().stream().map(this::toDto).collect(java.util.stream.Collectors.toList());
     }
 
@@ -68,13 +68,6 @@ public class DichVuPhongServiceImpl implements DichVuPhongService {
 
     @Override
     public DichVuPhong findLastUsage(String soPhong) {
-        // Assuming we want the latest record created for this room
-        // We'll need a custom query or sorting.
-        // Let's rely on repository. But repository doesn't have it yet.
-        // We can use a simple query finding all by room and sorting by Date desc limit 1.
-        // Or finding all and stream.
-        // Let's add a custom query to repo first or do it in memory if list small (bad practice).
-        // I will add a custom query to repository for `findTopByPhong_SoPhongOrderByNgayTaoDesc`.
         return repository.findTopByPhong_SoPhongOrderByNgayTaoDesc(soPhong);
     }
 
@@ -94,10 +87,11 @@ public class DichVuPhongServiceImpl implements DichVuPhongService {
                                  java.math.BigDecimal giaDien, java.math.BigDecimal giaNuoc,
                                  java.math.BigDecimal tienMang, String trangThai) {
         
+        // 1. Kiểm tra phòng tồn tại
         com.quanlyphongtro.models.Phong phong = phongRepository.findById(soPhong)
                 .orElseThrow(() -> new RuntimeException("Phòng không tồn tại: " + soPhong));
 
-        // Find Active Contract
+        // 2. Tìm hợp đồng đang hiệu lực để lấy mã hợp đồng
         com.quanlyphongtro.models.HopDongThue hd = hopDongRepository.findByTrangThai("Đang hiệu lực").stream()
                 .filter(h -> h.getPhong().getSoPhong().equals(soPhong))
                 .findFirst()
@@ -111,6 +105,11 @@ public class DichVuPhongServiceImpl implements DichVuPhongService {
         }
 
         DichVuPhong dv = new DichVuPhong();
+        
+        // Manual ID Generation
+        Integer maxId = repository.findMaxId();
+        dv.setId(maxId == null ? 1 : maxId + 1);
+
         dv.setPhong(phong);
         dv.setMaHopDong(hd.getId());
         dv.setKi(ki);
