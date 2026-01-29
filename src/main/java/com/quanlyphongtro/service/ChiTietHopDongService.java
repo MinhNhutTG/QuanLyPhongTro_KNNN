@@ -1,7 +1,7 @@
 package com.quanlyphongtro.service;
 
-import org.springframework.stereotype.Service;
+import com.quanlyphongtro.models.KhachThue;
 
-@Service
 public interface ChiTietHopDongService {
+    KhachThue getKhachThueByHopDong(String idHopDong);
 }

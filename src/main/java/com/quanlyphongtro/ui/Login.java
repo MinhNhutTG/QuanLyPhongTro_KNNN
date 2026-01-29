@@ -63,7 +63,7 @@ public class Login extends JFrame {
         contentPane.add(lblTitle);
 
         // Username
-        JLabel lblUserIcon = new JLabel("User:"); // Placeholder for icon
+        JLabel lblUserIcon = new JLabel("Username:"); // Placeholder for icon
         lblUserIcon.setBounds(40, 210, 40, 30);
         contentPane.add(lblUserIcon);
 
@@ -73,7 +73,7 @@ public class Login extends JFrame {
         contentPane.add(txtUsername);
         
         // Password
-        JLabel lblPassIcon = new JLabel("Key:"); // Placeholder for icon
+        JLabel lblPassIcon = new JLabel("Password:"); // Placeholder for icon
         lblPassIcon.setBounds(40, 260, 40, 30);
         contentPane.add(lblPassIcon);
 

@@ -46,6 +46,9 @@ public class panel_invoice extends JPanel {
     private final com.quanlyphongtro.service.HopDongThueSevice hopDongService;
     private final com.quanlyphongtro.service.DichVuPhongService dichVuPhongService;
     private final com.quanlyphongtro.service.PhongService phongService;
+    private final com.quanlyphongtro.service.EmailService emailService;
+    private final com.quanlyphongtro.service.ChiTietHopDongService chiTietHopDongService;
+    private final com.quanlyphongtro.repository.ConfigRepository configRepository;
 
     private JTextField txtSearch;
     private JTable table;
@@ -61,11 +64,17 @@ public class panel_invoice extends JPanel {
     private final Font MAIN_FONT = new Font("Segoe UI", Font.PLAIN, 14);
 
     @Autowired
-    public panel_invoice(HoaDonService hoaDonService, com.quanlyphongtro.service.HopDongThueSevice hopDongService, com.quanlyphongtro.service.DichVuPhongService dichVuPhongService, com.quanlyphongtro.service.PhongService phongService) {
+    public panel_invoice(HoaDonService hoaDonService, com.quanlyphongtro.service.HopDongThueSevice hopDongService,
+                         com.quanlyphongtro.service.DichVuPhongService dichVuPhongService, com.quanlyphongtro.service.PhongService phongService,
+                         com.quanlyphongtro.service.EmailService emailService, com.quanlyphongtro.service.ChiTietHopDongService chiTietHopDongService,
+                         com.quanlyphongtro.repository.ConfigRepository configRepository) {
         this.hoaDonService = hoaDonService;
         this.hopDongService = hopDongService;
         this.dichVuPhongService = dichVuPhongService;
         this.phongService = phongService;
+        this.emailService = emailService;
+        this.chiTietHopDongService = chiTietHopDongService;
+        this.configRepository = configRepository;
 
         setBackground(BACKGROUND_COLOR);
         setLayout(new BorderLayout(20, 20));
@@ -307,7 +316,7 @@ public class panel_invoice extends JPanel {
         }
         com.quanlyphongtro.dto.HoaDonDto hd = hoaDonService.getHoaDonById(id);
         if (hd != null) {
-            InvoiceDetail dialog = new InvoiceDetail((Frame) SwingUtilities.getWindowAncestor(this), hd);
+            InvoiceDetail dialog = new InvoiceDetail((Frame) SwingUtilities.getWindowAncestor(this), hd, emailService, chiTietHopDongService, configRepository);
             dialog.setVisible(true);
         }
     }

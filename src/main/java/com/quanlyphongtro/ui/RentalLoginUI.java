@@ -1,16 +1,36 @@
 package com.quanlyphongtro.ui;
 
+import com.quanlyphongtro.models.TaiKhoan;
+import com.quanlyphongtro.repository.TaiKhoanRepository;
+import com.quanlyphongtro.service.EmailService;
+import com.quanlyphongtro.service.OtpService;
+import com.quanlyphongtro.ui.Home.home;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
+
 import javax.swing.*;
 import java.awt.*;
 
 @Component
 public class RentalLoginUI extends JFrame {
     private final ConfigurableApplicationContext context;
+    private final TaiKhoanRepository taiKhoanRepository;
+    private final EmailService emailService;
+    private final OtpService otpService;
 
-    public RentalLoginUI(ConfigurableApplicationContext context) {
+    private JTextField txtEmail;
+    private JTextField txtCode;
+
+    @Autowired
+    public RentalLoginUI(ConfigurableApplicationContext context,
+                         TaiKhoanRepository taiKhoanRepository,
+                         EmailService emailService,
+                         OtpService otpService) {
         this.context = context;
+        this.taiKhoanRepository = taiKhoanRepository;
+        this.emailService = emailService;
+        this.otpService = otpService;
         initUI();
     }
 
@@ -28,7 +48,7 @@ public class RentalLoginUI extends JFrame {
         setContentPane(contentPane);
 
         // 1. Nút Back (Quay lại)
-        JButton btnBack = new JButton("←");
+        JButton btnBack = new JButton("X");
         btnBack.setFont(new Font("Arial", Font.BOLD, 20));
         btnBack.setForeground(Color.WHITE);
         btnBack.setBackground(new Color(231, 76, 60)); // Màu đỏ
@@ -42,14 +62,15 @@ public class RentalLoginUI extends JFrame {
 
         // 2. Logo (Dạng tròn)
         JLabel lblLogo = new JLabel();
-        lblLogo.setBounds(100, 80, 200, 200);
+        lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
         try {
-            ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo_tron.png"));
-            Image img = icon.getImage().getScaledInstance(180, 180, Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo.png"));
+            Image img = icon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
             lblLogo.setIcon(new ImageIcon(img));
         } catch (Exception e) {
-            lblLogo.setText("LOGO ROUND");
+            lblLogo.setText("LOGO"); // Fallback
         }
+        lblLogo.setBounds(100, 20, 200, 120);
         contentPane.add(lblLogo);
 
         // 3. Email đăng ký
@@ -58,7 +79,7 @@ public class RentalLoginUI extends JFrame {
         lblEmail.setBounds(50, 300, 200, 25);
         contentPane.add(lblEmail);
 
-        JTextField txtEmail = new JTextField();
+        txtEmail = new JTextField();
         txtEmail.setBounds(50, 330, 230, 35);
         contentPane.add(txtEmail);
 
@@ -66,6 +87,7 @@ public class RentalLoginUI extends JFrame {
         btnSend.setBackground(new Color(40, 167, 69));
         btnSend.setForeground(Color.WHITE);
         btnSend.setBounds(290, 330, 60, 35);
+        btnSend.addActionListener(e -> sendOtp());
         contentPane.add(btnSend);
 
         // 4. Mã Code
@@ -74,7 +96,7 @@ public class RentalLoginUI extends JFrame {
         lblCode.setBounds(50, 375, 200, 25);
         contentPane.add(lblCode);
 
-        JTextField txtCode = new JTextField();
+        txtCode = new JTextField();
         txtCode.setBounds(50, 400, 300, 35);
         contentPane.add(txtCode);
 
@@ -84,6 +106,7 @@ public class RentalLoginUI extends JFrame {
         btnConfirm.setForeground(Color.WHITE);
         btnConfirm.setFont(new Font("Segoe UI", Font.BOLD, 16));
         btnConfirm.setBounds(100, 460, 200, 45);
+        btnConfirm.addActionListener(e -> verifyOtpAndLogin());
         contentPane.add(btnConfirm);
 
         // 6. Ghi chú phía dưới
@@ -96,5 +119,55 @@ public class RentalLoginUI extends JFrame {
         txtNote.setForeground(Color.WHITE);
         txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         contentPane.add(txtNote);
+    }
+
+    private void sendOtp() {
+        String email = txtEmail.getText().trim();
+        if (email.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập Email!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Kiểm tra email có tồn tại trong DB không
+        TaiKhoan tk = taiKhoanRepository.findByEmailUser(email);
+        if (tk == null) {
+            JOptionPane.showMessageDialog(this, "Email không tồn tại trong hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            String otp = otpService.generateOtp(email);
+            String subject = "Mã xác thực đăng nhập - QuanLyPhongTro";
+            String text = "Xin chào " + tk.getUserName() + ",\n\n" +
+                          "Mã OTP của bạn là: " + otp + "\n" +
+                          "Mã này có hiệu lực trong phiên làm việc hiện tại.\n\n" +
+                          "Trân trọng,\nĐội ngũ quản lý.";
+            
+            emailService.sendSimpleMessage(email, subject, text);
+            JOptionPane.showMessageDialog(this, "Mã OTP đã được gửi đến email của bạn!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi gửi mail: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void verifyOtpAndLogin() {
+        String email = txtEmail.getText().trim();
+        String code = txtCode.getText().trim();
+
+        if (email.isEmpty() || code.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập Email và Mã Code!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        boolean isValid = otpService.validateOtp(email, code);
+        if (isValid) {
+            otpService.clearOtp(email);
+            JOptionPane.showMessageDialog(this, "Đăng nhập thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            this.dispose();
+            home homeGui = context.getBean(home.class);
+            homeGui.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Mã OTP không đúng hoặc đã hết hạn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

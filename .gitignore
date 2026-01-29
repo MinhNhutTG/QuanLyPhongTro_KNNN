@@ -1,0 +1,32 @@
+# ===== Java =====
+*.class
+
+# ===== Maven =====
+/target/
+
+# ===== Eclipse =====
+.project
+.classpath
+.settings/
+.metadata/
+
+# ===== IntelliJ =====
+.idea/
+*.iml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+
+# ===== Env / Local config =====
+*.env
+application-local.properties
+
+# ===== Swing / Temp =====
+bin/
+
+# ===== Manually added jars (WRONG practice) =====
+*.jar
