@@ -18,7 +18,7 @@ public class ChiTietHopDong {
     @JoinColumn(name = "MaKhach", nullable = false)
     private KhachThue khachThue;
 
-    @Column(name = "VaiTro", length = 100)
+    @Column(name = "VaiTro", length = 50)
     private String vaiTro;
 
 	public Long getId() {

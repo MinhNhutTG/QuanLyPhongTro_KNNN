@@ -11,7 +11,7 @@ public class KhachThue {
     @Column(name = "MaKhach")
     private Integer maKhach;
 
-    @Column(name = "HoTen", length = 100)
+    @Column(name = "HoTen", length = 50)
     private String hoTen;
 
     @Column(name = "NgaySinh")
@@ -23,10 +23,10 @@ public class KhachThue {
     @Column(name = "SoDienThoai", length = 11)
     private String soDienThoai;
 
-    @Column(name = "QueQuan", length = 2000)
+    @Column(name = "QueQuan", length = 1000)
     private String queQuan;
 
-    @Column(name = "TrangThai", length = 100, nullable = false)
+    @Column(name = "TrangThai", length = 50, nullable = false)
     private String trangThai;
 
     @Column(name = "Email", length = 100)

@@ -24,7 +24,7 @@ public class HopDongThue {
     @Column(name = "GiaPhong")
     private BigDecimal giaPhong;
 
-    @Column(name = "TrangThai", length = 100, nullable = false)
+    @Column(name = "TrangThai", length = 50, nullable = false)
     private String trangThai;
 
     @Column(name = "NgayTaoHopDong")

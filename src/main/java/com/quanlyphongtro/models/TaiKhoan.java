@@ -10,7 +10,7 @@ public class TaiKhoan {
     @Column(name = "UserName", length = 30)
     private String userName;
 
-    @Column(name = "PassWord", length = 255, nullable = false)
+    @Column(name = "PassWord", length = 5, nullable = false)
     private String passWord;
 
     @Column(name = "EmailUser", length = 100)

@@ -12,7 +12,7 @@ public class DichVu {
 	@Column(name = "ID")
     private Long id;
 
-    @Column(name = "TenDichVu", nullable = false)
+    @Column(name = "TenDichVu", nullable = false, length = 50)
     private String tenDichVu;
 
     @Column(name = "Gia")

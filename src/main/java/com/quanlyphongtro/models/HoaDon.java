@@ -40,10 +40,10 @@ public class HoaDon {
     @Column(name = "NgayLapHoaDon")
     private LocalDateTime ngayLapHoaDon;
 
-    @Column(name = "TrangThai", length = 100, nullable = false)
+    @Column(name = "TrangThai", length = 50, nullable = false)
     private String trangThai;
 
-    @Column(name = "GhiChu", length = 2000)
+    @Column(name = "GhiChu", length = 1000)
     private String ghiChu;
 
 	public String getIdHoaDon() {

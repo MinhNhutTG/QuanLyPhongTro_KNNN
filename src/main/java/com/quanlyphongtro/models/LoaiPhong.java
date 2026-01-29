@@ -10,7 +10,7 @@ public class LoaiPhong {
     @Column(name = "MaLoai", length = 10)
     private String maLoai;
 
-    @Column(name = "TenLoai", length = 100)
+    @Column(name = "TenLoai", length = 50)
     private String tenLoai;
 
     @Column(name = "Gia")

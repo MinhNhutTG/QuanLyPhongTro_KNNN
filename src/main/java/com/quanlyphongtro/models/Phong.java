@@ -7,17 +7,17 @@
 	public class Phong {
 	
 	    @Id
-	    @Column(name = "SoPhong", length = 20)
+	    @Column(name = "SoPhong", length = 10)
 	    private String soPhong;
 	
-	    @Column(name = "TrangThai", length = 100, nullable = false)
+	    @Column(name = "TrangThai", length = 50, nullable = false)
 	    private String trangThai;
 	
 	    @ManyToOne
 	    @JoinColumn(name = "MaLoai", nullable = false)
 	    private LoaiPhong loaiPhong;
 	
-	    @Column(name = "GhiChu", length = 2000)
+	    @Column(name = "GhiChu", length = 1000)
 	    private String ghiChu;
 	
 		public String getSoPhong() {

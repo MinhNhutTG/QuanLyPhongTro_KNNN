@@ -20,7 +20,7 @@ public class DichVuPhong {
     @Column(name = "MaHopDong", length = 10)
     private String maHopDong;
 
-    @Column(name = "Ki")
+    @Column(name = "Ki", length = 10)
     private String ki;
 
     @Column(name = "SoDienCu")
@@ -47,7 +47,7 @@ public class DichVuPhong {
 	    @Column(name = "NgayTao")
     private LocalDateTime ngayTao;
 
-    @Column(name = "TrangThai", length = 100)
+    @Column(name = "TrangThai", length = 50)
     private String trangThai;
 
 	public Integer getId() {

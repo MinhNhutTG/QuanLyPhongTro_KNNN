@@ -11,16 +11,16 @@ public class Config {
 	@Column(name = "ID")
     private Long id;
 
-    @Column(name = "TenNhaTro", length = 200, nullable = false)
+    @Column(name = "TenNhaTro", length = 100, nullable = false)
     private String tenNhaTro;
 
-    @Column(name = "SoTaiKhoan", length = 20, nullable = false)
+    @Column(name = "SoTaiKhoan", length = 10, nullable = false)
     private String soTaiKhoan;
 
-    @Column(name = "TenTaiKhoan", length = 200, nullable = false)
+    @Column(name = "TenTaiKhoan", length = 100, nullable = false)
     private String tenTaiKhoan;
 
-    @Column(name = "TenNganHang", length = 200, nullable = false)
+    @Column(name = "TenNganHang", length = 100, nullable = false)
     private String tenNganHang;
 
     @Column(name = "EmailSystem", columnDefinition = "TEXT")
