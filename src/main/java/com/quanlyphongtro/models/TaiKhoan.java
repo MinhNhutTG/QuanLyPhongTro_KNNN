@@ -3,17 +3,17 @@ package com.quanlyphongtro.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "tai_khoan")
+@Table(name = "taikhoan")
 public class TaiKhoan {
 
     @Id
-    @Column(name = "user_name", length = 30)
+    @Column(name = "UserName", length = 30)
     private String userName;
 
-    @Column(length = 255, nullable = false)
+    @Column(name = "PassWord", length = 255, nullable = false)
     private String passWord;
 
-    @Column(name = "email_user", length = 100)
+    @Column(name = "EmailUser", length = 100)
     private String emailUser;
 
 	public String getUserName() {

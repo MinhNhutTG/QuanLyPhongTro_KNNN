@@ -5,32 +5,45 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hoa_don")
+@Table(name = "hoadon")
 public class HoaDon {
 
     @Id
-    @Column(name = "id_hoa_don", length = 10)
+    @Column(name = "IDHoaDon", length = 10)
     private String idHoaDon;
 
     @ManyToOne
-    @JoinColumn(name = "id_dich_vu")
+    @JoinColumn(name = "IDDichVu")
     private DichVuPhong dichVuPhong;
 
+    @Column(name = "SoDien")
     private Integer soDien;
+
+    @Column(name = "SoNuoc")
     private Integer soNuoc;
 
+    @Column(name = "TienDien")
     private BigDecimal tienDien;
+
+    @Column(name = "TienNuoc")
     private BigDecimal tienNuoc;
+
+    @Column(name = "PhiKhac")
     private BigDecimal phiKhac;
+
+    @Column(name = "TongTien")
     private BigDecimal tongTien;
+
+    @Column(name = "GiaPhong")
     private BigDecimal giaPhong;
 
+    @Column(name = "NgayLapHoaDon")
     private LocalDateTime ngayLapHoaDon;
 
-    @Column(length = 100, nullable = false)
+    @Column(name = "TrangThai", length = 100, nullable = false)
     private String trangThai;
 
-    @Column(length = 2000)
+    @Column(name = "GhiChu", length = 2000)
     private String ghiChu;
 
 	public String getIdHoaDon() {

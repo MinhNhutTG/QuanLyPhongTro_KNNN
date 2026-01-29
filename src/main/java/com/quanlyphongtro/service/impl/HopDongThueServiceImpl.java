@@ -52,7 +52,16 @@ public class HopDongThueServiceImpl implements HopDongThueSevice {
     public void saveHopDong(HopDongDto dto) throws Exception {
         // 1. Map DTO -> Entity HopDong
         HopDongThue hd = new HopDongThue();
-        hd.setId(dto.getId());
+        
+        // AUTO GENERATE ID if null
+        if (dto.getId() == null || dto.getId().isEmpty()) {
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            String autoId = "HD" + now.format(java.time.format.DateTimeFormatter.ofPattern("MMddHHmm"));
+            hd.setId(autoId);
+        } else {
+            hd.setId(dto.getId());
+        }
+
         hd.setNgayThue(dto.getNgayThue().atStartOfDay());
         hd.setHanThue(dto.getHanThue().atStartOfDay());
         hd.setNgayTaoHopDong(dto.getNgayTao().atStartOfDay());
@@ -74,17 +83,9 @@ public class HopDongThueServiceImpl implements HopDongThueSevice {
             throw new Exception("Số lượng khách vượt quá sức chứa");
         }
 
-
-
         // Check room availability for new active contracts
         if ("Đang hiệu lực".equals(dto.getTrangThai())) {
-             // If creating new or updating to Active, check if room is already occupied by ANOTHER contract
-             // (Simple check: if Phong status is 'Đang thuê' and we are creating a NEW contract)
-             // However, reusing existing 'validate' or just simple check here:
-             if ("Đang thuê".equals(phong.getTrangThai()) && (dto.getId() == null || !dto.getId().equals(hopDongRepo.findByPhong_SoPhongAndTrangThai(dto.getSoPhong(), "Đang hiệu lực").getId()))) {
-                 // Logic complex because 'soPhong' might be same.
-                 // Simplest: If logic requires 1 active contract per room.
-             }
+             // Logic check phòng trống (giữ nguyên logic cũ nếu có, ở đây đang comment hoặc làm đơn giản)
         }
 
         hd.setPhong(phong);
@@ -98,20 +99,23 @@ public class HopDongThueServiceImpl implements HopDongThueSevice {
         // Lưu Hợp đồng trước
         HopDongThue savedHd = hopDongRepo.save(hd);
 
+        // --- XỬ LÝ KHÁCH THUÊ ---
+        // 1. Reset trạng thái khách cũ về "Chưa thuê"
+        // Tìm các chi tiết cũ của hợp đồng này (nếu đang update)
         List<ChiTietHopDong> oldDetails = chiTietRepo.findByHopDong(savedHd);
-
         for (ChiTietHopDong oldCt : oldDetails) {
             KhachThue khachCu = oldCt.getKhachThue();
-            khachCu.setTrangThai("Chưa thuê");
-            khachRepo.save(khachCu);
+            if (khachCu != null) {
+                khachCu.setTrangThai("Chưa thuê"); // Reset trước, lát nữa ai còn trong list mới sẽ được set lại là Đang thuê
+                khachRepo.save(khachCu);
+            }
         }
-        // 2. Xử lý Chi Tiết Hợp Đồng (Khách thuê)
-        // Xóa chi tiết cũ (Strategy: Delete All & Insert New để đơn giản logic update)
+        
+        // 2. Xóa chi tiết cũ
         chiTietRepo.deleteByHopDong(savedHd);
 
-        // Thêm chi tiết mới
+        // 3. Thêm chi tiết mới & Cập nhật trạng thái "Đang thuê"
         for (ChiTietHopDongDto chiTietDto : dto.getListKhach()) {
-            // Kiểm tra nhanh mã khách từ DTO
             if (chiTietDto.getMaKhach() == null ) {
                 throw new Exception("Mã khách thuê không được để trống!");
             }
@@ -122,15 +126,13 @@ public class HopDongThueServiceImpl implements HopDongThueSevice {
             ChiTietHopDong chiTiet = new ChiTietHopDong();
             chiTiet.setHopDong(savedHd);
             chiTiet.setVaiTro(chiTietDto.getVaiTro());
-
-            // QUAN TRỌNG: Phải set khách thuê VÀO chi tiết trước khi save chi tiết
             chiTiet.setKhachThue(khachMoi);
 
-            // Cập nhật trạng thái khách
-            khachMoi.setTrangThai("Đang Thuê");
+            // Cập nhật trạng thái khách -> "Đang thuê"
+            // Lưu ý: Nếu khách này vừa bị reset thành "Chưa thuê" ở bước 1, giờ sẽ được set lại thành "Đang thuê" -> Đúng logic
+            khachMoi.setTrangThai("Đang thuê"); // Sửa lại đúng chính tả "Đang thuê" thay vì "Đang Thuê" cho đồng bộ
             khachRepo.save(khachMoi);
 
-            // Lúc này chiTiet đã có khachThue, không còn bị null nữa
             chiTietRepo.save(chiTiet);
         }
     }

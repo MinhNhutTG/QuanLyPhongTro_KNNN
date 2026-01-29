@@ -4,25 +4,30 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hop_dong_thue")
+@Table(name = "hopdongthue")
 public class HopDongThue {
 
     @Id
-    @Column(length = 10)
+    @Column(name = "ID", length = 10)
     private String id;
 
+    @Column(name = "NgayThue")
     private LocalDateTime ngayThue;
+
+    @Column(name = "HanThue")
     private LocalDateTime hanThue;
 
     @ManyToOne
-    @JoinColumn(name = "so_phong", nullable = false)
+    @JoinColumn(name = "SoPhong", nullable = false)
     private Phong phong;
 
+    @Column(name = "GiaPhong")
     private BigDecimal giaPhong;
 
-    @Column(length = 100, nullable = false)
+    @Column(name = "TrangThai", length = 100, nullable = false)
     private String trangThai;
 
+    @Column(name = "NgayTaoHopDong")
     private LocalDateTime ngayTaoHopDong;
 
 	public String getId() {

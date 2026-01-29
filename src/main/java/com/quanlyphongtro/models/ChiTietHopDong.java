@@ -2,22 +2,23 @@ package com.quanlyphongtro.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "chi_tiet_hop_dong")
+@Table(name = "chitiethopdong")
 public class ChiTietHopDong {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_hop_dong", nullable = false)
+    @JoinColumn(name = "IDHopDong", nullable = false)
     private HopDongThue hopDong;
 
     @ManyToOne
-    @JoinColumn(name = "ma_khach", nullable = false)
+    @JoinColumn(name = "MaKhach", nullable = false)
     private KhachThue khachThue;
 
-    @Column(length = 100)
+    @Column(name = "VaiTro", length = 100)
     private String vaiTro;
 
 	public Long getId() {

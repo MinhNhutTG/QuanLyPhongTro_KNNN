@@ -3,17 +3,17 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "loai_phong")
+@Table(name = "loaiphong")
 public class LoaiPhong {
 
     @Id
-    @Column(name = "ma_loai", length = 10)
+    @Column(name = "MaLoai", length = 10)
     private String maLoai;
 
-    @Column(name = "ten_loai", length = 100)
+    @Column(name = "TenLoai", length = 100)
     private String tenLoai;
 
-    @Column(name = "gia")
+    @Column(name = "Gia")
     private BigDecimal gia;
 
 	@Column(name ="so_nguoi_toi_da")

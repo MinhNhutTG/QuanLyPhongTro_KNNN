@@ -157,7 +157,11 @@ public class add_edit_contract extends JFrame {
 
         // Khởi tạo các Component
         txtMaHD = new JTextField();
-        if (isEditMode) txtMaHD.setEditable(false);
+        txtMaHD.setEditable(false); // Luôn không cho nhập tay
+        if (mode == ContractMode.ADD) {
+           txtMaHD.setText("Tự động tạo");
+           txtMaHD.setForeground(Color.GRAY);
+        }
 
         cbTrangThai = new JComboBox<>(new String[]{"Đang hiệu lực", "Đã thanh lý", "Quá hạn"});
         txtNgayTao = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
@@ -309,7 +313,12 @@ public class add_edit_contract extends JFrame {
             }
 
             HopDongDto dto = new HopDongDto();
-            dto.setId(txtMaHD.getText());
+            String currentId = txtMaHD.getText();
+            if ("Tự động tạo".equals(currentId) || currentId.isEmpty()) {
+                dto.setId(null); // Cho Service tự sinh
+            } else {
+                dto.setId(currentId);
+            }
             dto.setSoPhong((String) cbSoPhong.getSelectedItem());
             dto.setTrangThai((String) cbTrangThai.getSelectedItem());
 

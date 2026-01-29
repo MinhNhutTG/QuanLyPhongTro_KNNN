@@ -4,16 +4,18 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "dich_vu")
+@Table(name = "dichvu")
 public class DichVu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID")
     private Long id;
 
-    @Column(name = "ten_dich_vu", nullable = false)
+    @Column(name = "TenDichVu", nullable = false)
     private String tenDichVu;
 
+    @Column(name = "Gia")
     private BigDecimal gia;
 
 	public Long getId() {

@@ -5,33 +5,49 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "dich_vu_phong")
+@Table(name = "dichvuphong")
 public class DichVuPhong {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+	@Column(name = "ID")
+    private Integer id;	
 
     @ManyToOne
-    @JoinColumn(name = "so_phong", nullable = false)
+    @JoinColumn(name = "SoPhong", nullable = false)
     private Phong phong;
 
-    @Column(name = "ma_hop_dong", length = 10)
+    @Column(name = "MaHopDong", length = 10)
     private String maHopDong;
 
+    @Column(name = "Ki")
     private String ki;
+
+    @Column(name = "SoDienCu")
     private Integer soDienCu;
+
+    @Column(name = "SoDienMoi")
     private Integer soDienMoi;
+
+    @Column(name = "SoNuocCu")
     private Integer soNuocCu;
+
+    @Column(name = "SoNuocMoi")
     private Integer soNuocMoi;
 
+    @Column(name = "GiaDien")
     private BigDecimal giaDien;
+
+    @Column(name = "GiaNuoc")
     private BigDecimal giaNuoc;
+
+    @Column(name = "TienMang")
     private BigDecimal tienMang;
 
+	    @Column(name = "NgayTao")
     private LocalDateTime ngayTao;
 
-    @Column(length = 100)
+    @Column(name = "TrangThai", length = 100)
     private String trangThai;
 
 	public Integer getId() {
